@@ -178,6 +178,12 @@ on_session_terminated(ClientInfo, Reason, _SessInfo, Opts) ->
 %%--------------------------------------------------------------------
 
 on_message_publish(Message, Opts = #{filter := Filter}) ->
+
+    ?SLOG(info, #{
+        msg => Message,
+        Filter => Filter
+    }),
+        
     case match_topic(Message, Filter) of
         true ->
             query(?evt_mod:eventmsg_publish(Message), Opts);

@@ -38,10 +38,18 @@ on_start(
         min_metadata_refresh_interval => C(min_metadata_refresh_interval),
         query_api_versions => C(query_api_versions),
         request_timeout => C(request_timeout),
-        sasl => C(sasl),
         ssl => C(ssl)
     },
-    ok = ensure_client(ClientId, Hosts, ClientConfig),
+
+    SaslValue = C(sasl),
+    if
+        SaslValue =/= undefined ->
+            ClientConfig1 = ClientConfig#{sasl => SaslValue};
+        true ->
+            ClientConfig1 = ClientConfig
+    end,
+
+    ok = ensure_client(ClientId, Hosts, ClientConfig1),
     case check_client_connectivity(ClientId) of
         ok ->
             {ok, #{

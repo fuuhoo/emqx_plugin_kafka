@@ -90,20 +90,17 @@ fields(sasl) ->
         {mechanism, ?HOCON(enum([plain, scram_sha_256, scram_sha_512]),
             #{
                 default => plain,
-                desc => ?DESC("sasl_mechanism"),
-                required => true
+                desc => ?DESC("sasl_mechanism")
             }
         )},
         {username, ?HOCON(string(),
             #{
-                desc => ?DESC("sasl_username"),
-                required => true
+                desc => ?DESC("sasl_username")
             }
         )},
         {password, ?HOCON(string(),
             #{
-                desc => ?DESC("sasl_password"),
-                required => true
+                desc => ?DESC("sasl_password")
             }
         )}
     ];
