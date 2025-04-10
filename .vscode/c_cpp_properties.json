@@ -1,0 +1,16 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/_build/default/lib/**"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/_build/default/lib/**"
+                ]
+            }
+        }
+    ],
+    "version": 4
+}

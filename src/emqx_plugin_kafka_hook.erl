@@ -49,21 +49,70 @@ hooks([Hook | T], Producer, Acc) ->
 hooks([], _, Acc) ->
     persistent_term:put({?EMQX_PLUGIN_KAFKA_APP, ?EMQX_PLUGIN_KAFKA_CHANNELS}, Acc).
 
-hook(ResId, Hook = #{endpoint := Endpoint0, filter := Filter}) ->
+hook(ResId, Hook = #{endpoint := Endpoint0,index:=Index, filter := Filter}) ->
+
+    % % 根据 Endpoint0 和 Index 生成 Endpoint
+    EndpointStr = lists:flatten(io_lib:format("~s~s", [Endpoint0, Index])),
+    % {ok, EndpointS} = emqx_utils:safe_to_existing_atom(EndpointStr),
+
     {ok, Endpoint} = emqx_utils:safe_to_existing_atom(Endpoint0),
-    ChannelId = emqx_plugin_kafka_util:channel_id(Endpoint),
+
+    {ok, Endpoint1} = emqx_utils:safe_to_existing_atom(list_to_atom(EndpointStr)),
+
+    % this add channel,see emqx_plugins_kafka_producer.erl on_add_channel
+
+    ChannelId = emqx_plugin_kafka_util:channel_id(Endpoint1),
+    
     emqx_resource_manager:add_channel(ResId, ChannelId, Hook),
+
     Opts = #{
         channel_id => ChannelId,
-        filter => Filter
+        filter => Filter,
+        index =>Index
+
     },
+
+    ?SLOG(info, #{
+        endpointStr000=>Endpoint1,
+        channel_id111 => ChannelId,
+        filter => Filter,
+        endpoint=> Endpoint,
+        optssssssss=>Opts
+    }),
+
+
     trigger_hook(Endpoint, endpoint_func(Endpoint), Opts),
     {ChannelId, Hook}.
 
 trigger_hook(_, undefined, _) ->
     ok;
-trigger_hook(Endpoint, Func, Opts) ->
-    emqx_hooks:add(Endpoint, {?MODULE, Func, [Opts]}, _Property = ?HP_HIGHEST).
+trigger_hook(Endpoint, Func, Opts = #{index:=Index,filter := Filter}) ->
+    % IndexInt = binary_to_integer(Index),
+    % Result = ?HP_HIGHEST - IndexInt,
+
+
+    NewOpts = maps:remove(index, Opts),
+
+
+    Index2 = binary_to_integer(Index),  % 转换为整数
+    NewPriority = ?HP_HIGHEST - Index2,  % 执行减法运算
+
+
+    ?SLOG(info, "new hookkkkkkkkkkkkkkkkkkkkkkkkk"),
+    ?SLOG(info, #{
+            newOptssssssssssssssssssssssssssssssssssssss=>NewOpts,
+            filttttttttttttttttttttttttttttttttttttttter=>Filter,
+            newPriorityyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy=>NewPriority,
+            index2222222222222222222222222222222222222222=>Index2
+        }   
+    ),
+
+    Result1=emqx_hooks:add(Endpoint, {?MODULE, Func, [NewOpts]}, _Property = NewPriority),
+
+    ?SLOG(info, #{
+        resultttttttttttttttttttttttt=>Result1
+    }).
+
 
 endpoint_func('client.connect') -> on_client_connect;
 endpoint_func('client.connack') -> on_client_connack;
@@ -181,7 +230,7 @@ on_message_publish(Message, Opts = #{filter := Filter}) ->
 
     ?SLOG(info, #{
         msg => Message,
-        Filter => Filter
+        fffffffffffffffffffffffffff => Filter
     }),
         
     case match_topic(Message, Filter) of

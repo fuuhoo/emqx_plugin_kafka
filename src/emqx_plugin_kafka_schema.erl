@@ -142,6 +142,11 @@ fields(hook) ->
                 required => true,
                 validator => fun validate_endpoint/1
             })},
+        {index, ?HOCON(binary(),
+            #{
+                desc => ?DESC("hook_index"),
+                default => 0
+            })},
         {filter, ?HOCON(binary(),
             #{
                 desc => ?DESC("hook_filter"),
