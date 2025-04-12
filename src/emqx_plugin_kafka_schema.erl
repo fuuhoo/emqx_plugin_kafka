@@ -192,7 +192,7 @@ validate_endpoint(undefined) ->
 validate_endpoint(Endpoint0) when is_list(Endpoint0) ->
     case emqx_utils:safe_to_existing_atom(Endpoint0) of
         {ok, Endpoint} ->
-            validate_endpoint(emqx_plugin_kafka_hook:endpoint_func(Endpoint));
+            validate_endpoint(emqx_plugin_kafka_hook:endpoint_func(Endpoint,'0'));
         _ ->
             {error, "no matching mount point was found"}
     end;

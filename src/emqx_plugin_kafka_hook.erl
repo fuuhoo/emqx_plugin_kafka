@@ -5,13 +5,16 @@
 -include_lib("emqx/include/logger.hrl").
 -include("emqx_plugin_kafka.hrl").
 
+
+
 -export([
     hooks/3
     , unhook/0
 ]).
 
 -export([
-    endpoint_func/1
+    endpoint_func/2
+
 ]).
 
 -export([
@@ -35,7 +38,17 @@
 ]).
 
 -export([
-    on_message_publish/2
+    on_message_publish_0/2,
+    on_message_publish_1/2,
+    on_message_publish_2/2,
+    on_message_publish_3/2,
+    on_message_publish_4/2,
+    on_message_publish_5/2,
+    on_message_publish_6/2,
+    on_message_publish_7/2,
+    on_message_publish_8/2,
+    on_message_publish_9/2,
+    on_message_publish_10/2
     , on_message_delivered/3
     , on_message_acked/3
     , on_message_dropped/4
@@ -52,7 +65,7 @@ hooks([], _, Acc) ->
 hook(ResId, Hook = #{endpoint := Endpoint0,index:=Index, filter := Filter}) ->
 
     % % 根据 Endpoint0 和 Index 生成 Endpoint
-    EndpointStr = lists:flatten(io_lib:format("~s~s", [Endpoint0, Index])),
+    EndpointStr = lists:flatten(io_lib:format("~s.~s", [Endpoint0, Index])),
     % {ok, EndpointS} = emqx_utils:safe_to_existing_atom(EndpointStr),
 
     {ok, Endpoint} = emqx_utils:safe_to_existing_atom(Endpoint0),
@@ -72,16 +85,25 @@ hook(ResId, Hook = #{endpoint := Endpoint0,index:=Index, filter := Filter}) ->
 
     },
 
-    ?SLOG(info, #{
-        endpointStr000=>Endpoint1,
-        channel_id111 => ChannelId,
-        filter => Filter,
-        endpoint=> Endpoint,
-        optssssssss=>Opts
-    }),
+    Indexx=list_to_atom(binary_to_list(Index)),
+
+    % ?SLOG(info, #{
+    %     endpointStr000=>Endpoint1,
+    %     channel_id111 => ChannelId,
+    %     filter => Filter,
+    %     endpoint=> Endpoint,
+    %     optsssssssssssssssssssssss=>Opts,
+    %     funccccccccccccccccccccccc=>endpoint_func(Endpoint,Index),
+    %     indexxxxxxxxxxxxxxxxxxxxxxxxxxxxx=>Index,
+    %     indexxxxxxxxxxxxxxxxxxxxxxxxxxxxx2=>Indexx
+
+    % }),
+
+    % ?SLOG(info, endpoint_func(Endpoint,Index)),
+
+    trigger_hook(Endpoint, endpoint_func(Endpoint,Indexx), Opts),
 
 
-    trigger_hook(Endpoint, endpoint_func(Endpoint), Opts),
     {ChannelId, Hook}.
 
 trigger_hook(_, undefined, _) ->
@@ -93,47 +115,62 @@ trigger_hook(Endpoint, Func, Opts = #{index:=Index,filter := Filter}) ->
 
     NewOpts = maps:remove(index, Opts),
 
-
     Index2 = binary_to_integer(Index),  % 转换为整数
     NewPriority = ?HP_HIGHEST - Index2,  % 执行减法运算
 
 
-    ?SLOG(info, "new hookkkkkkkkkkkkkkkkkkkkkkkkk"),
-    ?SLOG(info, #{
-            newOptssssssssssssssssssssssssssssssssssssss=>NewOpts,
-            filttttttttttttttttttttttttttttttttttttttter=>Filter,
-            newPriorityyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy=>NewPriority,
-            index2222222222222222222222222222222222222222=>Index2
-        }   
-    ),
+    % ?SLOG(info, "new hookkkkkkkkkkkkkkkkkkkkkkkkk"),
+    % ?SLOG(info, #{
+    %         newOptssssssssssssssssssssssssssssssssssssss=>NewOpts,
+    %         filttttttttttttttttttttttttttttttttttttttter=>Filter,
+    %         newPriorityyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy=>NewPriority,
+    %         index2222222222222222222222222222222222222222=>Index2
+    %     }   
+    % ),
+
+    % ?GEN_FUNC(Index);
 
     Result1=emqx_hooks:add(Endpoint, {?MODULE, Func, [NewOpts]}, _Property = NewPriority),
 
     ?SLOG(info, #{
-        resultttttttttttttttttttttttt=>Result1
+        emqx_hooks_add_result=>Result1
     }).
 
 
-endpoint_func('client.connect') -> on_client_connect;
-endpoint_func('client.connack') -> on_client_connack;
-endpoint_func('client.connected') -> on_client_connected;
-endpoint_func('client.disconnected') -> on_client_disconnected;
-endpoint_func('client.authenticate') -> on_client_authenticate;
-endpoint_func('client.authorize') -> on_client_authorize;
-endpoint_func('client.authenticate') -> on_client_authenticate;
-endpoint_func('client.check_authz_complete') -> on_client_check_authz_complete;
-endpoint_func('session.created') -> on_session_created;
-endpoint_func('session.subscribed') -> on_session_subscribed;
-endpoint_func('session.unsubscribed') -> on_session_unsubscribed;
-endpoint_func('session.resumed') -> on_session_resumed;
-endpoint_func('session.discarded') -> on_session_discarded;
-endpoint_func('session.takenover') -> on_session_takenover;
-endpoint_func('session.terminated') -> on_session_terminated;
-endpoint_func('message.publish') -> on_message_publish;
-endpoint_func('message.delivered') -> on_message_delivered;
-endpoint_func('message.acked') -> on_message_acked;
-endpoint_func('message.dropped') -> on_message_dropped;
-endpoint_func(_) -> undefined.
+endpoint_func('client.connect',_) -> on_client_connect;
+endpoint_func('client.connack',_) -> on_client_connack;
+endpoint_func('client.connected',_) -> on_client_connected;
+endpoint_func('client.disconnected',_) -> on_client_disconnected;
+endpoint_func('client.authenticate',_) -> on_client_authenticate;
+endpoint_func('client.authorize',_) -> on_client_authorize;
+endpoint_func('client.authenticate',_) -> on_client_authenticate;
+endpoint_func('client.check_authz_complete',_) -> on_client_check_authz_complete;
+endpoint_func('session.created',_) -> on_session_created;
+endpoint_func('session.subscribed',_) -> on_session_subscribed;
+endpoint_func('session.unsubscribed',_) -> on_session_unsubscribed;
+endpoint_func('session.resumed',_) -> on_session_resumed;
+endpoint_func('session.discarded',_) -> on_session_discarded;
+endpoint_func('session.takenover',_) -> on_session_takenover;
+endpoint_func('session.terminated',_) -> on_session_terminated;
+
+endpoint_func('message.publish','0') -> on_message_publish_0;
+endpoint_func('message.publish','1') -> on_message_publish_1;
+endpoint_func('message.publish','2') -> on_message_publish_2;
+endpoint_func('message.publish','3') -> on_message_publish_3;
+endpoint_func('message.publish','4') -> on_message_publish_4;
+endpoint_func('message.publish','5') -> on_message_publish_5;
+endpoint_func('message.publish','6') -> on_message_publish_6;
+endpoint_func('message.publish','7') -> on_message_publish_7;
+endpoint_func('message.publish','8') -> on_message_publish_8;
+endpoint_func('message.publish','9') -> on_message_publish_9;
+endpoint_func('message.publish','10') -> on_message_publish_10;
+
+
+
+endpoint_func('message.delivered',_) -> on_message_delivered;
+endpoint_func('message.acked',_) -> on_message_acked;
+endpoint_func('message.dropped',_) -> on_message_dropped;
+endpoint_func(_,_) -> undefined.
 
 unhook() ->
     unhook('client.connect', {?MODULE, on_client_connect}),
@@ -150,13 +187,28 @@ unhook() ->
     unhook('session.discarded', {?MODULE, on_session_discarded}),
     unhook('session.takenover', {?MODULE, on_session_takenover}),
     unhook('session.terminated', {?MODULE, on_session_terminated}),
-    unhook('message.publish', {?MODULE, on_message_publish}),
+    % unhook('message.publish', {?MODULE, on_message_publish}),
+
+    unhook('message.publish', {?MODULE, on_message_publish_0}),
+    unhook('message.publish', {?MODULE, on_message_publish_1}),
+    unhook('message.publish', {?MODULE, on_message_publish_2}),
+    unhook('message.publish', {?MODULE, on_message_publish_3}),
+    unhook('message.publish', {?MODULE, on_message_publish_4}),
+    unhook('message.publish', {?MODULE, on_message_publish_5}),
+    unhook('message.publish', {?MODULE, on_message_publish_6}),
+    unhook('message.publish', {?MODULE, on_message_publish_7}),
+    unhook('message.publish', {?MODULE, on_message_publish_8}),
+    unhook('message.publish', {?MODULE, on_message_publish_9}),
+    unhook('message.publish', {?MODULE, on_message_publish_10}),
+
+
     unhook('message.delivered', {?MODULE, on_message_delivered}),
     unhook('message.acked', {?MODULE, on_message_acked}),
     unhook('message.dropped', {?MODULE, on_message_dropped}).
 
 unhook(Endpoint, MFA) ->
     emqx_hooks:del(Endpoint, MFA).
+
 
 %%--------------------------------------------------------------------
 %% Client Lifecycle Hooks
@@ -226,13 +278,28 @@ on_session_terminated(ClientInfo, Reason, _SessInfo, Opts) ->
 %% Message PubSub Hooks
 %%--------------------------------------------------------------------
 
-on_message_publish(Message, Opts = #{filter := Filter}) ->
+% on_message_publish(Message, Opts = #{filter := Filter}) ->
 
-    ?SLOG(info, #{
-        msg => Message,
-        fffffffffffffffffffffffffff => Filter
-    }),
+%     ?SLOG(info, #{
+%         msg => Message,
+%         fffffffffffffffffffffffffff => Filter
+%     }),
         
+%     case match_topic(Message, Filter) of
+%         true ->
+%             query(?evt_mod:eventmsg_publish(Message), Opts);
+%         false ->
+%             ok
+%     end,
+%     {ok, Message}.
+on_message_publish_0(Message, Opts = #{filter := Filter}) ->
+
+
+    % ?SLOG(info, #{
+    %     msg0000 => Message,
+    %     fffffffffffffffffffffffffff => Filter
+    % }),
+   
     case match_topic(Message, Filter) of
         true ->
             query(?evt_mod:eventmsg_publish(Message), Opts);
@@ -240,6 +307,96 @@ on_message_publish(Message, Opts = #{filter := Filter}) ->
             ok
     end,
     {ok, Message}.
+
+on_message_publish_1(Message, Opts = #{filter := Filter}) ->
+
+
+    % ?SLOG(info, #{
+    %     msg1111 => Message,
+    %     fffffffffffffffffffffffffff => Filter
+    % }),
+
+    case match_topic(Message, Filter) of
+        true ->
+            query(?evt_mod:eventmsg_publish(Message), Opts);
+        false ->
+            ok
+    end,
+    {ok, Message}.
+
+on_message_publish_2(Message, Opts = #{filter := Filter}) ->
+    case match_topic(Message, Filter) of
+        true ->
+            query(?evt_mod:eventmsg_publish(Message), Opts);
+        false ->
+            ok
+    end,
+    {ok, Message}.
+on_message_publish_3(Message, Opts = #{filter := Filter}) ->
+    case match_topic(Message, Filter) of
+        true ->
+            query(?evt_mod:eventmsg_publish(Message), Opts);
+        false ->
+            ok
+    end,
+    {ok, Message}.
+on_message_publish_4(Message, Opts = #{filter := Filter}) ->
+    case match_topic(Message, Filter) of
+        true ->
+            query(?evt_mod:eventmsg_publish(Message), Opts);
+        false ->
+            ok
+    end,
+    {ok, Message}.
+on_message_publish_5(Message, Opts = #{filter := Filter}) ->
+    case match_topic(Message, Filter) of
+        true ->
+            query(?evt_mod:eventmsg_publish(Message), Opts);
+        false ->
+            ok
+    end,
+    {ok, Message}.
+on_message_publish_6(Message, Opts = #{filter := Filter}) ->
+    case match_topic(Message, Filter) of
+        true ->
+            query(?evt_mod:eventmsg_publish(Message), Opts);
+        false ->
+            ok
+    end,
+    {ok, Message}.
+on_message_publish_7(Message, Opts = #{filter := Filter}) ->
+    case match_topic(Message, Filter) of
+        true ->
+            query(?evt_mod:eventmsg_publish(Message), Opts);
+        false ->
+            ok
+    end,
+    {ok, Message}.
+on_message_publish_8(Message, Opts = #{filter := Filter}) ->
+    case match_topic(Message, Filter) of
+        true ->
+            query(?evt_mod:eventmsg_publish(Message), Opts);
+        false ->
+            ok
+    end,
+    {ok, Message}.
+on_message_publish_9(Message, Opts = #{filter := Filter}) ->
+    case match_topic(Message, Filter) of
+        true ->
+            query(?evt_mod:eventmsg_publish(Message), Opts);
+        false ->
+            ok
+    end,
+    {ok, Message}.
+on_message_publish_10(Message, Opts = #{filter := Filter}) ->
+    case match_topic(Message, Filter) of
+        true ->
+            query(?evt_mod:eventmsg_publish(Message), Opts);
+        false ->
+            ok
+    end,
+    {ok, Message}.
+
 
 on_message_dropped(Message, #{node := ByNode}, Reason, Opts = #{filter := Filter}) ->
     case match_topic(Message, Filter) of
