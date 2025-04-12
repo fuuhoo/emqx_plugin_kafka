@@ -1,3 +1,53 @@
+1、支持不填写sasl的鉴权
+2、手动笨方法增加了支持多个
+on_message_publish，需要再配置文件里面增加
+```
+plugin_kafka {
+  connection {
+    bootstrap_hosts = ["192.168.128.128:9092"]
+    connect_timeout = 10s
+    connection_strategy = per_partition
+    min_metadata_refresh_interval = 5s
+    query_api_versions = true
+    request_timeout = 3s
+    health_check_interval = 32s
+
+  }
+  producer {
+    max_batch_bytes = 896KB
+    compression = no_compression
+    partition_strategy = random
+    encode_payload_type = plain
+  }
+  hooks = [
+
+  {
+      endpoint = message.publish
+      index = 0
+      filter = "KunMing/Comp/HisWorkData/#"
+      kafka_topic = KunMing_Comp_HisWorkData
+      kafka_message = {
+        timestamp = "${.timestamp}"
+        value = "${.payload}"
+        key = "${.clientid}"
+     }
+    },
+
+    {
+      endpoint = message.publish
+      index = 1
+      filter = "KunMing/Tamp/HisWorkData/#"
+      kafka_topic = KunMing_Tamp_HisWorkData
+      kafka_message = {
+        timestamp = "${.timestamp}"
+        value = "${.payload}"
+        key = "${.clientid}"
+     }
+    }
+  ]
+}
+```
+
 # emqx_plugin_kafka
 
 Kafka plugin for EMQX >= V5.4.0 && EMQX < V5.7.0
