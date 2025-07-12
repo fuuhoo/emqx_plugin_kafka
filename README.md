@@ -1,5 +1,5 @@
 1、支持不填写sasl的鉴权
-2、手动笨方法增加了支持多个
+2、手动笨方法增加了支持多个，注意提前创建好kafka的topic，要不会出现错误
 on_message_publish，需要再配置文件里面增加
 ```
 plugin_kafka {
